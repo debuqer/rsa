@@ -2,42 +2,48 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"math/big"
 )
 
 func main() {
-	var p, q int
-	p = 5
-	q = 7
+	p, _ := new(big.Int).SetString("7", 10)
+	q, _ := new(big.Int).SetString("23", 10)
 
-	N := p * q
-	T := (p - 1) * (q - 1)
+	zero, _ := new(big.Int).SetString("0", 10)
+	one, _ := new(big.Int).SetString("1", 10)
+	max_try, _ := new(big.Int).SetString("100", 10)
 
-	var e int
-	for i := 1; i < T; i++ {
-		if big.NewInt(int64(i)).ProbablyPrime(20) {
-			if T%i != 0 {
+	N := new(big.Int).Mul(p, q)
+	T := new(big.Int).Mul(new(big.Int).Sub(p, one), new(big.Int).Sub(q, one))
+
+	e := new(big.Int)
+	i := new(big.Int).Set(one)
+
+	for ; i.Cmp(T) <= 0; i.Add(i, one) {
+		if i.ProbablyPrime(20) {
+			if new(big.Int).Mod(T, i).Cmp(zero) == 1 {
 				e = i
+				break
 			}
 		}
 	}
 
-	var d int
-	for j := 1; j < 100; j++ {
-		if e*j%T == 1 {
+	d := new(big.Int)
+	j := new(big.Int).Set(one)
+
+	for ; j.Cmp(max_try) <= 0; j.Add(j, one) {
+		if new(big.Int).Mod(new(big.Int).Mul(e, j), T).Cmp(one) == 0 && j.Cmp(e) != 0 {
 			d = j
 			break
 		}
 	}
 
-	t := 2
+	fmt.Println(N.Uint64(), T.Uint64(), e.Uint64(), d.Uint64())
 
-	fmt.Printf("Public key: (%d, %d)\n", e, N)
-	fmt.Printf("Private key: (%d, %d)\n", d, N)
-	encrypted := math.Mod(math.Pow(float64(t), float64(e)), float64(N))
-	fmt.Printf("encrypt: %d %d\n", t, uint(encrypted))
+	t, _ := new(big.Int).SetString("112", 10)
 
-	decrypted := math.Mod(math.Pow(float64(encrypted), float64(d)), float64(N))
-	fmt.Printf("decrypted: %d %d\n", uint(encrypted), uint(decrypted))
+	encrypted := new(big.Int).Exp(t, e, N)
+	decrypted := new(big.Int).Exp(encrypted, d, N)
+	fmt.Println(encrypted.Text(10))
+	fmt.Println(decrypted.Text(10))
 }
